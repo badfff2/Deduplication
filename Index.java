@@ -35,7 +35,7 @@ public class Index implements Serializable {
             totalUniqueBytes += chunkSize;
         }
         
-        chunkReferences.get(hash).add(filename);
+        chunkReferences.get(hash).add(filename);    
         
         if (!fileRecipes.containsKey(filename)) {
             fileRecipes.put(filename, new ArrayList<>());
@@ -87,5 +87,9 @@ public class Index implements Serializable {
 
     public boolean containsFile(String fileName){
         return fileRecipes.containsKey(fileName);
+    }
+
+    public boolean containsChunk(String hash){
+        return chunkReferences.containsKey(hash);
     }
 }

@@ -17,7 +17,7 @@ public class Store {
     
     private int getNextContainerId() {
         int maxId = -1;
-        File[] files = dataDir.listFiles((dir, name) -> name.startsWith("container_"));
+        File[] files = dataDir.listFiles((_, name) -> name.startsWith("container_"));
         if (files != null) {
             for (File file : files) {
                 try {
@@ -32,16 +32,17 @@ public class Store {
     }
     
     public void addChunk(String hash, byte[] chunk, Index index) throws IOException {
+        
         if (currentContainer.size() + chunk.length > CONTAINER_SIZE) {
-            flushContainer();
-            index.incrementContainers();
+            flushContainer(index);
+            
         }
         
         containerChunks.put(hash, currentContainer.size());
         currentContainer.write(chunk);
     }
     
-    public void flushContainer() throws IOException {
+    public void flushContainer(Index index) throws IOException {
         if (currentContainer.size() > 0) {
             File containerFile = new File(dataDir, "container_" + currentContainerId);
             try (FileOutputStream fos = new FileOutputStream(containerFile)) {
@@ -57,6 +58,8 @@ public class Store {
             currentContainerId++;
             currentContainer = new ByteArrayOutputStream();
             containerChunks = new HashMap<>();
+            
+            index.incrementContainers();
         }
     }
 }

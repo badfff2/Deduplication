@@ -75,7 +75,7 @@ public class MyDedup {
         Index index = Index.load();
         Store store = new Store();
 
-        // return error if we upload duplicate files
+        // Return error if we upload duplicate files
         if (index.containsFile(fileToUpload)){
             System.err.println("Error: Duplicate file detected.");
             return;
@@ -99,14 +99,16 @@ public class MyDedup {
             md.reset();
             String hash = bytesToHex(md.digest(chunk));
             
-            // Add chunk to index and store
+            // Add chunk to index and store (index.addChunk() change the result of index.containsChunk() )
+            if(!index.containsChunk(hash)){    
+                store.addChunk(hash, chunk, index);
+            }
             index.addChunk(hash, chunk, fileToUpload);
-            store.addChunk(hash, chunk, index);
+            
         }
         
         // Flush remaining chunks in the last container
-        store.flushContainer();
-        index.incrementContainers();
+        store.flushContainer(index);
         index.incrementFiles();
         
         // Save updated index
