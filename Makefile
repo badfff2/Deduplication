@@ -31,6 +31,10 @@ runargs:
 clean:
 	rm -f *.class
 
+cleandata:
+	rm -f mydedup.index
+	rm -rf data/
+
 # Clean all generated files (including index and data directory)
 cleanall: clean
 	rm -f mydedup.index
