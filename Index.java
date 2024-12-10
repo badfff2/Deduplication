@@ -84,4 +84,8 @@ public class Index implements Serializable {
         System.out.println("Total number of containers in storage: " + totalContainers);
         System.out.printf("Deduplication ratio: %.2f%n", (double) totalPreDedupBytes / totalUniqueBytes);
     }
+
+    public boolean containsFile(String fileName){
+        return fileRecipes.containsKey(fileName);
+    }
 }

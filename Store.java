@@ -31,9 +31,10 @@ public class Store {
         return maxId + 1;
     }
     
-    public void addChunk(String hash, byte[] chunk) throws IOException {
+    public void addChunk(String hash, byte[] chunk, Index index) throws IOException {
         if (currentContainer.size() + chunk.length > CONTAINER_SIZE) {
             flushContainer();
+            index.incrementContainers();
         }
         
         containerChunks.put(hash, currentContainer.size());
