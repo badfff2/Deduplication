@@ -14,7 +14,7 @@ public class Store {
         containerChunks = new HashMap<>();
         currentContainerId = getNextContainerId();
     }
-    
+
     private int getNextContainerId() {
         int maxId = -1;
         File[] files = dataDir.listFiles((_, name) -> name.startsWith("container_"));
@@ -61,5 +61,10 @@ public class Store {
             
             index.incrementContainers();
         }
+    }
+
+    public File[] getOffsetFilesInStore() {
+        File[] files = dataDir.listFiles((_, name) -> name.endsWith(".offset"));
+        return files;
     }
 }

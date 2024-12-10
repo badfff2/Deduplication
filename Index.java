@@ -106,6 +106,35 @@ public class Index implements Serializable {
     
     }
 
+    public void removeChunkReference(String hash, String filename) {
+        if (chunkReferences.containsKey(hash)) {
+            Set<String> references = chunkReferences.get(hash);
+            references.remove(filename);
+            
+            // If no more references to this chunk, remove it completely
+            if (references.isEmpty()) {
+                totalUniqueBytes -= chunkSizes.get(hash);
+                chunkReferences.remove(hash);
+                chunkSizes.remove(hash);
+            }
+        }
+    }
+    
+    public void removeFile(String filename) {
+        if (fileRecipes.containsKey(filename)) {
+            FileData data = fileData.get(filename);
+            
+            // Update statistics
+            totalPreDedupBytes -= data.getFileSize();
+            totalFiles--;
+            
+            // Remove file data
+            fileRecipes.remove(filename);
+            fileData.remove(filename);
+        }
+    }
+
+
     public boolean containsFile(String fileName){
         return fileRecipes.containsKey(fileName);
     }
@@ -128,5 +157,11 @@ public class Index implements Serializable {
     
     public void incrementFiles() {
         totalFiles++;
+    }
+
+    public void decrementContainers() {
+        if (totalContainers > 0) {
+            totalContainers--;
+        }
     }
 }
