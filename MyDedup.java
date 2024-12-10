@@ -121,6 +121,58 @@ public class MyDedup {
     private static void download(String fileToDownload, String localFileName) {
         System.out.println("Downloading file: " + fileToDownload);
 
+        // Load index
+        Index index = Index.load();
+
+        // Check if file exists in the index
+        if (!index.containsFile(fileToDownload)) {
+            System.err.println("Error: File does not exist in storage: " + fileToDownload);
+            return;
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(localFileName)) {
+            List<String> chunkHashes = index.getFileRecipe(fileToDownload);
+            
+            for (String hash : chunkHashes) {
+                // Find the container with this chunk
+                int containerId = 0;
+                Map<String, Integer> containerOffsets = null;
+                File containerFile = null;
+                
+                while (new File("data/container_" + containerId + ".offset").exists()) {
+                    try (ObjectInputStream ois = new ObjectInputStream(
+                            new FileInputStream("data/container_" + containerId + ".offset"))) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Integer> offsets = (Map<String, Integer>) ois.readObject();
+                        if (offsets.containsKey(hash)) {
+                            containerOffsets = offsets;
+                            containerFile = new File("data/container_" + containerId);
+                            break;
+                        }
+                    }
+                    containerId++;
+                }
+                
+                if (containerOffsets == null || containerFile == null) {
+                    throw new IOException("Chunk not found in any container: " + hash);
+                }
+                
+                // Read and write the chunk
+                try (RandomAccessFile raf = new RandomAccessFile(containerFile, "r")) {
+                    byte[] chunk = new byte[index.getChunkSize(hash)];
+                    raf.seek(containerOffsets.get(hash));
+                    raf.read(chunk);
+                    fos.write(chunk);
+                }
+            }
+            
+            System.out.println("File downloaded successfully to: " + localFileName);
+            
+        } catch (Exception e) {
+            System.err.println("Error downloading file: " + e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     private static void delete(String fileToDelete) {

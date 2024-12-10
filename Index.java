@@ -92,4 +92,12 @@ public class Index implements Serializable {
     public boolean containsChunk(String hash){
         return chunkReferences.containsKey(hash);
     }
+
+    public List<String> getFileRecipe(String filename) {
+        return fileRecipes.get(filename);
+    }
+    
+    public int getChunkSize(String hash) {
+        return chunkSizes.get(hash);
+    }
 }
