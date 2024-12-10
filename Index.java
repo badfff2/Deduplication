@@ -1,6 +1,26 @@
 import java.io.*;
 import java.util.*;
 
+class FileData implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private int fileSize;
+    private int preDedupChunkNum;
+    
+    public FileData(int fileSize, int preDedupChunkNum) {
+        this.fileSize = fileSize;
+        this.preDedupChunkNum = preDedupChunkNum;
+    }
+    
+    public int getFileSize() {
+        return fileSize;
+    }
+    
+    public int getPreDedupChunkNum() {
+        return preDedupChunkNum;
+    }
+}
+
 public class Index implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -10,6 +30,8 @@ public class Index implements Serializable {
     private Map<String, List<String>> fileRecipes;
     // Maps chunk hash to its size in bytes
     private Map<String, Integer> chunkSizes;
+    // Maps filename to its FileData
+    private Map<String, FileData> fileData;
     
     private int totalFiles;
     private long totalPreDedupBytes;
@@ -20,6 +42,7 @@ public class Index implements Serializable {
         chunkReferences = new HashMap<>();
         fileRecipes = new HashMap<>();
         chunkSizes = new HashMap<>();
+        fileData = new HashMap<>();
         totalFiles = 0;
         totalPreDedupBytes = 0;
         totalUniqueBytes = 0;
@@ -40,16 +63,13 @@ public class Index implements Serializable {
         if (!fileRecipes.containsKey(filename)) {
             fileRecipes.put(filename, new ArrayList<>());
         }
+
         fileRecipes.get(filename).add(hash);
         totalPreDedupBytes += chunkSize;
     }
 
-    public void incrementContainers() {
-        totalContainers++;
-    }
-    
-    public void incrementFiles() {
-        totalFiles++;
+    public void updateFileData(String filename, int fileSize, int preDedupChunkNum){
+        fileData.put(filename, new FileData(fileSize, preDedupChunkNum));
     }
     
     public static Index load() {
@@ -83,6 +103,7 @@ public class Index implements Serializable {
         System.out.println("Total number of bytes of unique chunks in storage: " + totalUniqueBytes);
         System.out.println("Total number of containers in storage: " + totalContainers);
         System.out.printf("Deduplication ratio: %.2f%n", (double) totalPreDedupBytes / totalUniqueBytes);
+    
     }
 
     public boolean containsFile(String fileName){
@@ -99,5 +120,13 @@ public class Index implements Serializable {
     
     public int getChunkSize(String hash) {
         return chunkSizes.get(hash);
+    }
+
+    public void incrementContainers() {
+        totalContainers++;
+    }
+    
+    public void incrementFiles() {
+        totalFiles++;
     }
 }

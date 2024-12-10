@@ -106,6 +106,8 @@ public class MyDedup {
             index.addChunk(hash, chunk, fileToUpload);
             
         }
+
+        index.updateFileData(fileToUpload, (int) file.length(), chunks.size());
         
         // Flush remaining chunks in the last container
         store.flushContainer(index);
